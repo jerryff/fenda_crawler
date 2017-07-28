@@ -34,12 +34,12 @@ class LiveSpider(scrapy.Spider):
         pass
 
     def start_requests(self):
-        count = 1
+        count = 0
         while True:
-            if count>8:
+            if count>=40:
                 break
             count+=1
-            currentUrl = "http://fd.zaih.com/speech_api/v1/speeches?page="+str(count)+"&per_page=20"
+            currentUrl = "http://fd.zaih.com/api/v1/tags/10/accounts?page="+str(count)+"&per_page=20"
             yield scrapy.Request(
                 url= currentUrl,
                 headers= self.headers,
@@ -61,20 +61,7 @@ class LiveSpider(scrapy.Spider):
             yield LiveItem(data=json_results, type="speech")
 
             for each in json_results:
-                nextPage = "http://fd.zaih.com/speech_api/v1/speeches/" + each["id"] + "/posts"
-                yield scrapy.Request(
-                    url= nextPage,
-                    headers= self.relay_headers,
-                    meta = {
-                        'proxy': UsersConfig['proxy'],
-                        'from': {
-                            'sign': 'else',
-                            'data': {}
-                        }
-                    },
-                    callback = None,
-                    dont_filter = True
-                )
+                nextPage = "http://fd.zaih.com/tutor/" + str(each["id"])
 
                 yield scrapy.Request(
                     url= nextPage,
@@ -92,5 +79,9 @@ class LiveSpider(scrapy.Spider):
                 )
 
     def live_comment(self, response):
-        json_results = json.loads(response.body)
-        yield CommentItem(data=json_results, type="comment", id=response.meta["id"])
+        data=[]
+        data.append(response.xpath('//meta[@name="pageData"]//@content').extract())
+        # data.append(response.xpath("//div[@class=\"title\"]/text()"))
+        # data.append(response.xpath("//title/text()"))
+        
+        yield CommentItem(data=data, type="comment", id=response.meta["id"])

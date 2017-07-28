@@ -9,7 +9,7 @@ UsersConfig = {
 }
 
 FileConfig = {
-    "name": "fenda.jl",
+    "name": "doctor.csv",
     "mode_new": "w",
     "mode_append": "a"
 }
